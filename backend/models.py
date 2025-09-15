@@ -35,7 +35,7 @@ class AIDatabase(db.Model):
     description = db.Column(db.String(200))                     # descriere (optional)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
-    # foreign spre user
+    # foreign key spre user
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     def __repr__(self):
@@ -58,7 +58,7 @@ class AIDatabase(db.Model):
 
     @staticmethod
     def calculate_hash(file_path):
-        """Calculeaza hash (SHA-256) pentru un fisier"""
+        """ Generate SHA-256 hash for a file """
         sha256 = hashlib.sha256()
         with open(file_path, "rb") as f:
             for chunk in iter(lambda: f.read(4096), b""):

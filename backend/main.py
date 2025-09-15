@@ -28,7 +28,7 @@ db_model = api.model(
         'file_hash': fields.String(),
         'size_mb': fields.Float(),
         'description': fields.String(),
-        'user_id': fields.Integer(required=True, description='user ID'),
+        'user_id': fields.Integer(required=True),
         'created_at': fields.String()
     }
 )
@@ -48,13 +48,13 @@ class UserListResource(Resource):
 
     @api.marshal_list_with(user_model)
     def get(self):
-        """Returnează toți utilizatorii"""
+        """ Return all users """
         return User.query.all()
 
     @api.expect(user_model)
     @api.marshal_with(user_model)
     def post(self):
-        """Creează un utilizator nou"""
+        """ Create a new user """
         data = request.get_json()
         user = User(
             username=data.get('username'),
@@ -72,7 +72,7 @@ class DatabaseListResource(Resource):
 
     @api.marshal_list_with(db_model)
     def get(self):
-        """Returnează toate bazele de date"""
+        """ Return all databases """
         return AIDatabase.query.all()
 
 
@@ -81,7 +81,7 @@ class DatabaseUploadResource(Resource):
 
     @api.marshal_with(db_model)
     def post(self):
-        """ New database upload """
+        """ Upload a new database file """
         file = request.files.get('file')
         name = request.form.get('name')
         model_name = request.form.get('model_name')
@@ -126,7 +126,7 @@ class DatabaseResource(Resource):
 
     @api.marshal_with(db_model)
     def get(self, id):
-        """  Get metadata of a single database """
+        """  Get data of a single database """
         return AIDatabase.query.get_or_404(id)
 
     def delete(self, id):
