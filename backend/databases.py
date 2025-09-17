@@ -1,6 +1,12 @@
 from flask_restx import Namespace, Resource, fields
 from models import AIDatabase, User
 from flask_jwt_extended import jwt_required
+from flask import request, abort
+import os
+from config import Config
+from exts import db
+
+UPLOAD_FOLDER = Config.UPLOAD_FOLDER
 
 databases_ns = Namespace('databases', description='A name space for AI Databases')
 
@@ -49,7 +55,7 @@ class DatabaseUploadResource(Resource):
             return {"message": "No file, name, scope or user id was provided."}, 400
 
         # verificare daca user-ul exista
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         if not user:
             return {"message": "The user does not exist"}, 404
 
@@ -81,9 +87,8 @@ class DatabaseUploadResource(Resource):
 class DatabaseResource(Resource):
 
     @databases_ns.marshal_with(db_model)
-    @jwt_required()
     def get(self, id):
-        """  Get data of a single database """
+        """ Get data of a single database """
         return AIDatabase.query.get_or_404(id)
 
     @jwt_required()
@@ -91,4 +96,4 @@ class DatabaseResource(Resource):
         """ Delete a database and its file """
         db_entry = AIDatabase.query.get_or_404(id)
         db_entry.delete()
-        return {"message": "Baza de date ștearsă"}, 200
+        return {"message": "Database deleted successfully."}, 200
