@@ -7,13 +7,12 @@ import os
 from flask_jwt_extended import JWTManager
 from backend.ai_databse_api_endpoints import databases_ns
 from backend.user_authentification import auth_ns
-
+from backend.constants import UPLOAD_FOLDER
 
 def create_app(config):
     app = Flask(__name__)
     app.config.from_object(config)
 
-    UPLOAD_FOLDER = "uploads"
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
     db.init_app(app)

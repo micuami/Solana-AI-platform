@@ -23,8 +23,6 @@ login_model = auth_ns.model(
     }
 )
 
-
-
 @auth_ns.route('/signup')
 class SignUp(Resource):
     @auth_ns.expect(signup_model)

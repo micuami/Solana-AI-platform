@@ -3,10 +3,8 @@ from backend.models import AIDatabase, User
 from flask_jwt_extended import jwt_required
 from flask import request
 import os
-from backend.config import Config
 from backend.externals import db
-
-UPLOAD_FOLDER = Config.UPLOAD_FOLDER
+from backend.constants import UPLOAD_FOLDER
 
 databases_ns = Namespace('databases', description='A namespace for AI Databases')
 
