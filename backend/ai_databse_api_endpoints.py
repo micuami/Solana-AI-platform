@@ -1,14 +1,14 @@
 from flask_restx import Namespace, Resource, fields
-from models import AIDatabase, User
+from backend.models import AIDatabase, User
 from flask_jwt_extended import jwt_required
-from flask import request, abort
+from flask import request
 import os
-from config import Config
-from exts import db
+from backend.config import Config
+from backend.externals import db
 
 UPLOAD_FOLDER = Config.UPLOAD_FOLDER
 
-databases_ns = Namespace('databases', description='A name space for AI Databases')
+databases_ns = Namespace('databases', description='A namespace for AI Databases')
 
 db_model = databases_ns.model(
     'AIDatabase',
@@ -44,7 +44,7 @@ class DatabaseUploadResource(Resource):
     @jwt_required()
     def post(self):
         """ Upload a new database file """
-        file = request.files.get('file')
+        file = request.form.get('file')
         name = request.form.get('name')
         model_name = request.form.get('model_name')
         purpose = request.form.get('purpose')
@@ -83,17 +83,30 @@ class DatabaseUploadResource(Resource):
         return db_entry, 201
 
 
-@databases_ns.route('/databases/<int:id>')
+@databases_ns.route('/databases/<int:database_id>')
 class DatabaseResource(Resource):
 
     @databases_ns.marshal_with(db_model)
-    def get(self, id):
+    def get(self, database_id):
         """ Get data of a single database """
-        return AIDatabase.query.get_or_404(id)
+        return AIDatabase.query.get_or_404(database_id)
+
+    @databases_ns.marshal_with(db_model)
+    @databases_ns.expect(db_model)
+    @jwt_required()
+    def put(self, database_id):
+        """ Update a database record """
+        db_entry = AIDatabase.query.get_or_404(database_id)
+        
+        data = request.get_json()
+
+        db_entry.update(**data)
+
+        return db_entry, 200
 
     @jwt_required()
-    def delete(self, id):
+    def delete(self, database_id):
         """ Delete a database and its file """
-        db_entry = AIDatabase.query.get_or_404(id)
+        db_entry = AIDatabase.query.get_or_404(database_id)
         db_entry.delete()
         return {"message": "Database deleted successfully."}, 200

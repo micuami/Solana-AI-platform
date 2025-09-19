@@ -1,9 +1,8 @@
 import unittest
-from main import create_app
-from config import TestConfig
-from exts import db
+from backend.main import create_app
+from backend.config import TestConfig
+from backend.externals import db
 import io
-import os
 
 class APITestCase(unittest.TestCase):
     def setUp(self):

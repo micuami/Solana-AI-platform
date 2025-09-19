@@ -1,4 +1,4 @@
-from exts import db
+from backend.externals import db
 import hashlib
 import os
 
@@ -9,10 +9,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), nullable=False, unique=True)
     email = db.Column(db.String(80), nullable=False, unique=True)
-    password = db.Column(db.Text(), nullable=False)
+    password = db.Column(db.String(), nullable=False)
 
     # relatie: un user poate avea mai multe baze de date
-    databases = db.relationship('AIDatabase', backref='user', lazy=True, cascade="all, delete-orphan")
+    databases = db.relationship('AIDatabase', backref='user', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -32,7 +32,7 @@ class AIDatabase(db.Model):
     file_path = db.Column(db.String(200), nullable=False)       # locatia fisierului
     file_hash = db.Column(db.String(64), nullable=False)        # hash pentru integritate
     size_mb = db.Column(db.Float, nullable=False)               # dimensiunea fisierului
-    description = db.Column(db.String(200))                     # descriere (optional)
+    description = db.Column(db.String())                     # descriere (optional)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # foreign key spre user
