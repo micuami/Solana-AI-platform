@@ -24,21 +24,16 @@ login_model = auth_ns.model(
     }
 )
 
-def verify_if_user_exists(username):
-    return User.query.filter_by(username=username).first() is not None
-
-def verify_if_email_exists(email):
-    return User.query.filter_by(email=email).first() is not None
+def verify_if_user_or_email_exists(identifier):
+    return User.query.filter((User.username == identifier) | (User.email == identifier)).first() is not None
 
 def verify_if_the_identifier_is_email(identifier):
     regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(regex, identifier) is not None
 
 def find_user_by_identifier(identifier):
-    if verify_if_the_identifier_is_email(identifier):
-        return User.query.filter_by(email=identifier).first()
-    else:
-        return User.query.filter_by(username=identifier).first()
+    if verify_if_the_identifier_is_email(identifier): return User.query.filter_by(email=identifier).first()
+    else: return User.query.filter_by(username=identifier).first()
 
 @auth_ns.route('/signup')
 class SignUp(Resource):
@@ -47,12 +42,12 @@ class SignUp(Resource):
         data = request.get_json()
 
         username = data.get('username')
+        email = data.get('email')
 
-        if verify_if_user_exists(username):
+        if verify_if_user_or_email_exists(username):
             return jsonify({"message":f"User with username {username} already exists."}), 409
 
-        email = data.get('email')
-        if verify_if_email_exists(email):
+        if verify_if_user_or_email_exists(email):
             return jsonify({"message":f"User with email {email} already exists."}), 409
 
         new_user = User(

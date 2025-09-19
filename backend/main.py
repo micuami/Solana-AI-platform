@@ -8,6 +8,7 @@ from backend.models import AIDatabase, User
 from backend.ai_databse_api_endpoints import databases_ns
 from backend.user_authentification import auth_ns
 from backend.constants import UPLOAD_FOLDER
+from backend.admin_initialization import ensure_admin_exists
 
 def create_app(config):
     app = Flask(__name__)
@@ -18,6 +19,9 @@ def create_app(config):
     db.init_app(app)
     migrate = Migrate(app, db)
     JWTManager(app)
+
+    with app.app_context():
+        ensure_admin_exists()
 
     api = Api(app, doc='/docs')
 
