@@ -8,7 +8,7 @@ flask = "*"
 flask-restx = "*"
 sqlalchemy = "*"
 flask-jwt-extended = "*"
-python-decouple = "*"
+python-dotenv = "*"
 flask-migrate = "*"
 
 [dev-packages]
