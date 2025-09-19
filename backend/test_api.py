@@ -1,8 +1,8 @@
 import unittest
+import io
 from backend.main import create_app
 from backend.config import TestConfig
 from backend.externals import db
-import io
 
 class APITestCase(unittest.TestCase):
     def setUp(self):
@@ -36,7 +36,7 @@ class APITestCase(unittest.TestCase):
         
         login_response = self.client.post('/auth/login',
             json={
-                "username": "testuser",
+                "identifier": "testuser",
                 "password": "password"
             })
         
@@ -77,7 +77,7 @@ class APITestCase(unittest.TestCase):
         
         login_response = self.client.post('/auth/login',
             json={
-                "username": "testuser",
+                "identifier": "testuser",
                 "password": "password"
             })
         
@@ -114,7 +114,7 @@ class APITestCase(unittest.TestCase):
         
         login_response = self.client.post('/auth/login',
             json={
-                "username": "testuser",
+                "identifier": "testuser",
                 "password": "password"
             })
         

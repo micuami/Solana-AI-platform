@@ -1,7 +1,6 @@
-from backend.externals import db
 import hashlib
 import os
-
+from backend.externals import db
 
 class User(db.Model):
     __tablename__ = 'users'

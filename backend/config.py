@@ -1,10 +1,12 @@
-from decouple import config
+from dotenv import load_dotenv
 import os
 from backend.constants import BASE_DIR
 
+load_dotenv()
+
 class Config:
-    SECRET_KEY = config('SECRET_KEY')
-    SQLALCHEMY_TRACK_MODIFICATIONS = config('SQLALCHEMY_TRACK_MODIFICATIONS', cast=bool)
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    SQLALCHEMY_TRACK_MODIFICATIONS = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS')
 
 class DevConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'dev.db')

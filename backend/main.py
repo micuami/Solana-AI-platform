@@ -1,10 +1,10 @@
 from flask import Flask
 from flask_restx import Api
 from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
+import os
 from backend.externals import db
 from backend.models import AIDatabase, User
-import os
-from flask_jwt_extended import JWTManager
 from backend.ai_databse_api_endpoints import databases_ns
 from backend.user_authentification import auth_ns
 from backend.constants import UPLOAD_FOLDER

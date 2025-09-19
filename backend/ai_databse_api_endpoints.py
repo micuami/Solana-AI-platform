@@ -1,8 +1,8 @@
 from flask_restx import Namespace, Resource, fields
-from backend.models import AIDatabase, User
 from flask_jwt_extended import jwt_required
 from flask import request
 import os
+from backend.models import AIDatabase, User
 from backend.externals import db
 from backend.constants import UPLOAD_FOLDER
 
