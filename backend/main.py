@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_restx import Api
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
@@ -13,7 +13,7 @@ from backend.admin_initialization import ensure_admin_exists
 def create_app(config):
     app = Flask(__name__)
     app.config.from_object(config)
-
+    
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
     db.init_app(app)
@@ -21,7 +21,14 @@ def create_app(config):
     JWTManager(app)
 
     with app.app_context():
+        db.create_all()
         ensure_admin_exists()
+
+    @app.route('/')
+    def home():
+        return jsonify({
+            'message': 'Welcome to Solana AI Platform'
+        })
 
     api = Api(app, doc='/docs')
 
@@ -35,7 +42,4 @@ def create_app(config):
             'AIDatabase': AIDatabase, 
             'user': User
         }
-    
     return app
-
-

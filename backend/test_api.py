@@ -1,7 +1,7 @@
 import unittest
 import io
 from backend.main import create_app
-from backend.config import TestConfig
+from backend.configuration_classes_for_flask import TestConfig
 from backend.externals import db
 
 class APITestCase(unittest.TestCase):
