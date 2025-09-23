@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask import request, jsonify, make_response
 from backend.models import User
+from backend.strenght_of_a_password import validate_password    
 
 auth_ns = Namespace('auth', description='A namespace for Authentication')
 
@@ -49,6 +50,9 @@ class SignUp(Resource):
 
         if verify_if_user_or_email_exists(email):
             return jsonify({"message":f"User with email {email} already exists."}), 409
+        
+        if not validate_password(data.get('password')):
+            return jsonify({"message":"Password does not meet the required criteria."}), 400
 
         new_user = User(
             username = data.get('username'),
