@@ -10,6 +10,7 @@ sqlalchemy = "*"
 flask-jwt-extended = "*"
 python-dotenv = "*"
 flask-migrate = "*"
+boto3 = "*"
 
 [dev-packages]
 
