@@ -6,6 +6,7 @@ import os
 from backend.externals import db
 from backend.models import AIDatabase, User
 from backend.ai_databse_api_endpoints import databases_ns
+from backend.ai_model_api_endpoints import models_ns
 from backend.user_authentification import auth_ns
 from backend.constants import UPLOAD_FOLDER
 from backend.admin_initialization import ensure_admin_exists
@@ -32,6 +33,7 @@ def create_app(config):
 
     api = Api(app, doc='/docs')
 
+    api.add_namespace(models_ns)
     api.add_namespace(databases_ns)
     api.add_namespace(auth_ns)
 

@@ -1,0 +1,18 @@
+{
+  "name": "clients",
+  "version": "1.0.0",
+  "description": "",
+  "main": "register_model.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@project-serum/anchor": "^0.26.0",
+    "@solana/web3.js": "^1.98.4",
+    "toml": "^3.0.0"
+  }
+}

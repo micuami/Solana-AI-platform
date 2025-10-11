@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * register_model.js
+ * rent_model.js
  * Usage:
- *   node register_model.js <model_hash_hex> <storage_uri> <price_lamports>
+ *   node rent_model.js <model_hash_hex>
  * Env/optional args:
  *   WALLET_PATH  - path to keypair json (default: ~/.config/solana/id.json)
  *   PROGRAM_ID   - program id (default: inferred from Anchor.toml or REQUIRED)
@@ -12,7 +12,7 @@
  * Example:
  *   PROGRAM_ID=GdRo... RPC_URL=http://127.0.0.1:8899 \
  *   WALLET_PATH=~/.config/solana/id.json \
- *   node register_model.js 9f12... "ipfs://Qm..." 1000000
+ *   node rent_model.js 9f12...
  */
 
 import fs from "fs";
@@ -57,7 +57,6 @@ async function inferProgramIdFromAnchorToml() {
     if (fs.existsSync(p)) {
       const parsed = loadAnchorToml(p);
       if (parsed && parsed.programs) {
-        // pick first program id found
         const envs = Object.keys(parsed.programs);
         for (const env of envs) {
           const programs = parsed.programs[env];
@@ -75,11 +74,11 @@ async function inferProgramIdFromAnchorToml() {
 async function main() {
   try {
     const argv = process.argv.slice(2);
-    if (argv.length < 3) {
-      exitJSON({ success: false, error: "Usage: register_model.js <model_hash_hex> <storage_uri> <price_lamports>" }, 1);
+    if (argv.length < 1) {
+      exitJSON({ success: false, error: "Usage: rent_model.js <model_hash_hex>" }, 1);
     }
 
-    const [modelHashHex, storageUri, priceLamportsStr] = argv;
+    const [modelHashHex] = argv;
 
     // defaults and envs
     const walletPathArg = process.env.WALLET_PATH || process.env.SOLANA_WALLET || "~/.config/solana/id.json";
@@ -88,11 +87,9 @@ async function main() {
     const rpcUrl = process.env.RPC_URL || "http://127.0.0.1:8899";
     const idlPathEnv = process.env.IDL_PATH || path.join(process.cwd(), "..", "target", "idl", "blockchain.json");
 
-    // validations
     if (!/^[0-9a-fA-F]{64}$/.test(modelHashHex)) {
       exitJSON({ success: false, error: "model_hash_hex must be 64 hex chars (sha256 hex)" }, 1);
     }
-    const priceLamports = Number.parseInt(priceLamportsStr, 10) || 0;
 
     // wallet
     if (!fs.existsSync(walletPath)) {
@@ -103,7 +100,6 @@ async function main() {
     // IDL
     let idlPath = idlPathEnv;
     if (!fs.existsSync(idlPath)) {
-      // try alternative locations
       const alt = path.join(process.cwd(), "target", "idl", "blockchain.json");
       if (fs.existsSync(alt)) idlPath = alt;
     }
@@ -112,7 +108,7 @@ async function main() {
     }
     const idl = JSON.parse(fs.readFileSync(idlPath, "utf8"));
 
-    // program id: env or inferred
+    // program id
     let programId = programIdArg;
     if (!programId) {
       programId = await inferProgramIdFromAnchorToml();
@@ -135,19 +131,34 @@ async function main() {
     if (seedBytes.length !== 32) {
       exitJSON({ success: false, error: "model_hash_hex must be 32 bytes (64 hex chars)" }, 1);
     }
+    const [modelPda] = await PublicKey.findProgramAddress([Buffer.from("model"), seedBytes], program.programId);
 
-    const [modelPda, bump] = await PublicKey.findProgramAddress([Buffer.from("model"), seedBytes], program.programId);
+    // fetch model account to ensure exists and get uploader pubkey
+    let modelAccount;
+    try {
+      modelAccount = await program.account.model.fetch(modelPda);
+    } catch (e) {
+      exitJSON({ success: false, error: "Model account not found on-chain for given hash", details: e.message || String(e) }, 1);
+    }
 
-    // prepare args: Anchor expects [u8;32] as Array<number>
+    // uploader pubkey depends on your account layout; we expect a pubkey field named `uploader`
+    let uploaderPubkey;
+    try {
+      uploaderPubkey = new PublicKey(modelAccount.uploader);
+    } catch (e) {
+      exitJSON({ success: false, error: "Failed to parse uploader pubkey from model account", details: e.message || String(e) }, 1);
+    }
+
+    // prepare args
     const modelHashArg = Array.from(seedBytes);
-    const merkleRootArg = Array.from(Buffer.alloc(32, 0));
 
-    // call create_model
+    // call rent_model
     const tx = await program.methods
-      .createModel(modelHashArg, merkleRootArg, storageUri, new anchor.BN(priceLamports))
+      .rentModel(modelHashArg)
       .accounts({
         model: modelPda,
-        uploader: provider.wallet.publicKey,
+        renter: provider.wallet.publicKey,
+        uploader: uploaderPubkey,
         systemProgram: SystemProgram.programId,
       })
       .rpc();
@@ -156,8 +167,8 @@ async function main() {
       success: true,
       txid: tx,
       model_pda: modelPda.toBase58(),
-      program_id: program.programId.toBase58(),
-      wallet: provider.wallet.publicKey.toBase58(),
+      renter: provider.wallet.publicKey.toBase58(),
+      uploader: uploaderPubkey.toBase58(),
     }, 0);
   } catch (err) {
     exitJSON({ success: false, error: err.message || String(err), stack: err.stack }, 1);

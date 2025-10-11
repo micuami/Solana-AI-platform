@@ -26,7 +26,7 @@ class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'test.db')
     TESTING = True
 
-class ProdConfig():
-    SECRET_KEY = fetch_keys().get('PRODUCTION_KEY') if fetch_keys() else None
-    if SECRET_KEY is None:
-        raise ValueError("No SECRET_KEY set for production environment")
+# class ProdConfig():
+#     SECRET_KEY = fetch_keys().get('PRODUCTION_KEY') if fetch_keys() else None
+#     if SECRET_KEY is None:
+#         raise ValueError("No SECRET_KEY set for production environment")
