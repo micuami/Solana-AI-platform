@@ -84,6 +84,12 @@ class Login(Resource):
             return {"message": "identifier and password required"}, 400
 
         db_user = find_user_by_identifier(identifier)
+        print("DB user found:", db_user)
+        if db_user:
+            print("Password hash:", db_user.password)
+        else:
+            print("User not found")
+
         if db_user and check_password_hash(db_user.password, password):
             # use user.id as identity for robustness
             access_token = create_access_token(identity=str(db_user.id))
