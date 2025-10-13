@@ -10,9 +10,11 @@ from backend.ai_model_api_endpoints import models_ns
 from backend.user_authentification import auth_ns
 from backend.constants import UPLOAD_FOLDER
 from backend.admin_initialization import ensure_admin_exists
+from flask_cors import CORS
 
 def create_app(config):
     app = Flask(__name__)
+    CORS(app)
     app.config.from_object(config)
     
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
