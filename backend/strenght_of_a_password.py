@@ -14,8 +14,8 @@ def check_if_contains_special_char(password):
     return any(not char.isalnum() for char in password)
 
 def validate_password(password):
-    return (check_password_strength(password) and
-            check_if_contains_number(password) and
-            check_if_contains_lowercase(password) and
-            check_if_contains_uppercase(password) and
-            check_if_contains_special_char(password))
+    return (check_password_strength(password) )
+            # check_if_contains_number(password) and
+            # check_if_contains_lowercase(password) and
+            # check_if_contains_uppercase(password) and
+            # check_if_contains_special_char(password))
