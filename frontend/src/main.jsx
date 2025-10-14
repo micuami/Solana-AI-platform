@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -14,6 +14,12 @@ import "./index.css";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
+
+  // când token se schimbă, păstrează-l și în localStorage
+  useEffect(() => {
+    if (token) localStorage.setItem("token", token);
+    else localStorage.removeItem("token");
+  }, [token]);
 
   return (
     <Router>

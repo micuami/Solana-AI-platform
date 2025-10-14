@@ -18,7 +18,7 @@
 import fs from "fs";
 import path from "path";
 import toml from "toml";
-import * as anchor from "@project-serum/anchor";
+import * as anchor from "@coral-xyz/anchor";
 import { Connection, Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 
 function exitJSON(obj, code = 0) {
@@ -128,7 +128,29 @@ async function main() {
     const provider = new anchor.AnchorProvider(connection, wallet, anchor.AnchorProvider.defaultOptions());
     anchor.setProvider(provider);
 
-    const program = new anchor.Program(idl, programPubkey, provider);
+    console.log("Using IDL path:", idlPath);
+
+    let idlRaw;
+    try {
+      idlRaw = fs.readFileSync(idlPath, "utf8");
+    } catch (err) {
+      console.error("Cannot read IDL file:", err.message);
+      process.exit(1);
+    }
+
+    let idl1;
+    try {
+      idl1 = JSON.parse(idlRaw);
+    } catch (e) {
+      console.error("Invalid JSON in IDL file:", e.message);
+      process.exit(1);
+    }
+
+    console.log("IDL keys:", Object.keys(idl1));
+    console.log("instructions count:", (idl1.instructions || []).length);
+    console.log("accounts count:", idl1.accounts ? idl.accounts.length : 0);
+    console.log("first accounts item:", (idl1.accounts || [])[0]);
+    const program = new anchor.Program(idl1, programPubkey, provider);
 
     // derive PDA: seeds = ["model", model_hash_bytes]
     const seedBytes = Buffer.from(modelHashHex, "hex");

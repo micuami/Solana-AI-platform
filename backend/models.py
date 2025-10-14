@@ -88,7 +88,10 @@ class AIModel(db.Model):
     storage_uri = db.Column(db.String(1024), nullable=False)            # ipfs://, s3://, file://...
     price_lamports = db.Column(db.BigInteger, nullable=True)            # pret (dacă folosești monetizare)
     onchain_tx = db.Column(db.String(128), nullable=True)               # txid on-chain daca s-a facut notarizarea
+    model_pda = db.Column(db.String(64), nullable=True)                 # PDA on-chain              
     size_mb = db.Column(db.Float, nullable=False, default=0.0)
+    status = db.Column(db.String(30), default="pending")                # pending|registered|failed
+    last_error = db.Column(db.String())                                 # optional error string
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):

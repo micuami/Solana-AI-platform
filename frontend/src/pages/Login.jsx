@@ -20,8 +20,12 @@ export default function Login({ setToken }) {
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data["access token"]);
-        setToken(data["access token"]);
+        // backend poate returna fie "access_token" fie "access token"
+        const tokenValue = data.access_token || data["access token"] || data.token;
+        if (!tokenValue) throw new Error("No token in response");
+        // actualizează state-ul React IMEDIAT
+        localStorage.setItem("token", tokenValue); // păstrează în storage
+        setToken(tokenValue);                        // ACTUALIZEAZĂ UI-ul imediat
         navigate("/models");
       } else {
         setError(data.message || "Login failed");
