@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{program::invoke, system_instruction};
 
-declare_id!("3Uxey2KwiZqMK2uTbqJBEqayjfo8jZFDEhZpU97RQVY6");
+declare_id!("ZSoUNwHGAwkCzCKkLEnkY1m3Ud7WUjQMWRh5p4LZfpT");
 
 #[program]
 pub mod model_registry {

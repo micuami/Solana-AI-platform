@@ -1,24 +1,22 @@
 #!/usr/bin/env node
 /**
- * register_model.js
+ * register_model.js (ready-for-devnet)
+ *
  * Usage:
  *   node register_model.js <model_hash_hex> <storage_uri> <price_lamports>
- * Env/optional args:
- *   WALLET_PATH  - path to keypair json (default: ~/.config/solana/id.json)
- *   PROGRAM_ID   - program id (default: inferred from Anchor.toml or REQUIRED)
- *   RPC_URL      - RPC url (default: http://127.0.0.1:8899)
- *   IDL_PATH     - idl json path (default: ../target/idl/blockchain.json)
  *
- * Example:
- *   PROGRAM_ID=GdRo... RPC_URL=http://127.0.0.1:8899 \
- *   WALLET_PATH=~/.config/solana/id.json \
- *   node register_model.js 9f12... "ipfs://Qm..." 1000000
+ * Env vars:
+ *   WALLET_PATH  - path to keypair json (default: ~/.config/solana/id.json)
+ *   PROGRAM_ID   - Solana program id (fallback: idl.address)
+ *   RPC_URL      - RPC url (default: https://api.devnet.solana.com)
+ *   IDL_PATH     - path to IDL JSON (default: ../target/idl/model_registry.json)
  */
 
+import 'dotenv/config';
 import fs from "fs";
 import path from "path";
-import toml from "toml";
 import * as anchor from "@coral-xyz/anchor";
+import BN from "bn.js";
 import { Connection, Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 
 function exitJSON(obj, code = 0) {
@@ -38,40 +36,6 @@ function readKeypairFromFile(filePath) {
   return Keypair.fromSecretKey(Uint8Array.from(arr));
 }
 
-function loadAnchorToml(tomlPath) {
-  try {
-    const txt = fs.readFileSync(tomlPath, "utf8");
-    return toml.parse(txt);
-  } catch (e) {
-    return null;
-  }
-}
-
-async function inferProgramIdFromAnchorToml() {
-  const candPaths = [
-    path.join(process.cwd(), "..", "Anchor.toml"),
-    path.join(process.cwd(), "..", "..", "Anchor.toml"),
-    path.join(process.cwd(), "Anchor.toml"),
-  ];
-  for (const p of candPaths) {
-    if (fs.existsSync(p)) {
-      const parsed = loadAnchorToml(p);
-      if (parsed && parsed.programs) {
-        // pick first program id found
-        const envs = Object.keys(parsed.programs);
-        for (const env of envs) {
-          const programs = parsed.programs[env];
-          const names = Object.keys(programs);
-          if (names.length > 0 && programs[names[0]]) {
-            return programs[names[0]];
-          }
-        }
-      }
-    }
-  }
-  return null;
-}
-
 async function main() {
   try {
     const argv = process.argv.slice(2);
@@ -80,93 +44,59 @@ async function main() {
     }
 
     const [modelHashHex, storageUri, priceLamportsStr] = argv;
-
-    // defaults and envs
-    const walletPathArg = process.env.WALLET_PATH || process.env.SOLANA_WALLET || "~/.config/solana/id.json";
-    const walletPath = expandHome(walletPathArg);
-    let programIdArg = process.env.PROGRAM_ID || null;
-    const rpcUrl = process.env.RPC_URL || "http://127.0.0.1:8899";
-    const idlPathEnv = process.env.IDL_PATH || path.join(process.cwd(), "..", "target", "idl", "blockchain.json");
-
-    // validations
     if (!/^[0-9a-fA-F]{64}$/.test(modelHashHex)) {
-      exitJSON({ success: false, error: "model_hash_hex must be 64 hex chars (sha256 hex)" }, 1);
+      exitJSON({ success: false, error: "model_hash_hex must be 64 hex chars" }, 1);
     }
     const priceLamports = Number.parseInt(priceLamportsStr, 10) || 0;
 
-    // wallet
+    // Wallet
+    const walletPath = expandHome(process.env.WALLET_PATH || "~/.config/solana/id.json");
     if (!fs.existsSync(walletPath)) {
-      exitJSON({ success: false, error: `wallet file not found: ${walletPath}` }, 1);
+      exitJSON({ success: false, error: `Wallet file not found: ${walletPath}` }, 1);
     }
     const keypair = readKeypairFromFile(walletPath);
 
     // IDL
-    let idlPath = idlPathEnv;
+    let idlPath = process.env.IDL_PATH || path.join(process.cwd(), "..", "target", "idl", "model_registry.json");
     if (!fs.existsSync(idlPath)) {
-      // try alternative locations
-      const alt = path.join(process.cwd(), "target", "idl", "blockchain.json");
-      if (fs.existsSync(alt)) idlPath = alt;
-    }
-    if (!fs.existsSync(idlPath)) {
-      exitJSON({ success: false, error: `IDL file not found at ${idlPath}. Set IDL_PATH env or ensure Anchor build run.` }, 1);
+      exitJSON({ success: false, error: `IDL file not found: ${idlPath}` }, 1);
     }
     const idl = JSON.parse(fs.readFileSync(idlPath, "utf8"));
 
-    // program id: env or inferred
-    let programId = programIdArg;
-    if (!programId) {
-      programId = await inferProgramIdFromAnchorToml();
-    }
-    if (!programId) {
-      exitJSON({ success: false, error: "program_id not provided and couldn't be inferred. Set PROGRAM_ID env or pass as arg." }, 1);
-    }
+    console.log("Using IDL path:", idlPath);
 
-    // Setup provider
-    const programPubkey = new PublicKey(programId);
-    const connection = new Connection(rpcUrl, "confirmed");
+    // Provider
+    const connection = new Connection(process.env.RPC_URL || "https://api.devnet.solana.com", "confirmed");
     const wallet = new anchor.Wallet(keypair);
     const provider = new anchor.AnchorProvider(connection, wallet, anchor.AnchorProvider.defaultOptions());
     anchor.setProvider(provider);
 
-    console.log("Using IDL path:", idlPath);
+    // Program
+    const programPubkey = new PublicKey(process.env.PROGRAM_ID || idl.address);
+    const program = new anchor.Program(idl, provider);
 
-    let idlRaw;
-    try {
-      idlRaw = fs.readFileSync(idlPath, "utf8");
-    } catch (err) {
-      console.error("Cannot read IDL file:", err.message);
-      process.exit(1);
-    }
+    console.log("program.id:", program.programId.toBase58());
+    console.log("program.methods keys:", Object.keys(program.methods));
 
-    let idl1;
-    try {
-      idl1 = JSON.parse(idlRaw);
-    } catch (e) {
-      console.error("Invalid JSON in IDL file:", e.message);
-      process.exit(1);
-    }
-
-    console.log("IDL keys:", Object.keys(idl1));
-    console.log("instructions count:", (idl1.instructions || []).length);
-    console.log("accounts count:", idl1.accounts ? idl.accounts.length : 0);
-    console.log("first accounts item:", (idl1.accounts || [])[0]);
-    const program = new anchor.Program(idl1, programPubkey, provider);
-
-    // derive PDA: seeds = ["model", model_hash_bytes]
+    // derive PDA
     const seedBytes = Buffer.from(modelHashHex, "hex");
-    if (seedBytes.length !== 32) {
-      exitJSON({ success: false, error: "model_hash_hex must be 32 bytes (64 hex chars)" }, 1);
-    }
+    const [modelPda] = await PublicKey.findProgramAddress([Buffer.from("model"), seedBytes], program.programId);
 
-    const [modelPda, bump] = await PublicKey.findProgramAddress([Buffer.from("model"), seedBytes], program.programId);
+    // prepare args
+    const modelHashArg = Array.from(seedBytes);                 // [u8;32]
+    const merkleRootArg = Array.from(Buffer.alloc(32, 0));     // [u8;32] zeros
+    const storageUriArg = storageUri;                           // string
+    const priceArg = new BN(priceLamports.toString());          // u64
 
-    // prepare args: Anchor expects [u8;32] as Array<number>
-    const modelHashArg = Array.from(seedBytes);
-    const merkleRootArg = Array.from(Buffer.alloc(32, 0));
+    console.log("DEBUG ARGS:");
+    console.log(" modelHashArg len:", modelHashArg.length);
+    console.log(" merkleRootArg len:", merkleRootArg.length);
+    console.log(" storageUri:", storageUriArg);
+    console.log(" price:", priceArg.toString());
 
-    // call create_model
-    const tx = await program.methods
-      .createModel(modelHashArg, merkleRootArg, storageUri, new anchor.BN(priceLamports))
+    // send transaction
+    const txid = await program.methods
+      .createModel(modelHashArg, merkleRootArg, storageUriArg, priceArg)
       .accounts({
         model: modelPda,
         uploader: provider.wallet.publicKey,
@@ -176,11 +106,12 @@ async function main() {
 
     exitJSON({
       success: true,
-      txid: tx,
+      txid,
       model_pda: modelPda.toBase58(),
       program_id: program.programId.toBase58(),
-      wallet: provider.wallet.publicKey.toBase58(),
+      wallet: provider.wallet.publicKey.toBase58()
     }, 0);
+
   } catch (err) {
     exitJSON({ success: false, error: err.message || String(err), stack: err.stack }, 1);
   }
