@@ -12,6 +12,7 @@ python-dotenv = "*"
 flask-migrate = "*"
 boto3 = "*"
 python-Levenshtein = "*"
+flask-cors = "*"
 
 [dev-packages]
 
