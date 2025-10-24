@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import Navbar from "./components/Navbar";
-import Login from "./pages/Login";
-import Models from "./pages/Models";
-import Databases from "./pages/Databases";
-import UploadModel from "./pages/UploadModel";
-import UploadDatabase from "./pages/UploadDatabase";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import NavBar from "./components/Navbar";
+import Login from "./components/Login";
+import Signup from "./components/Signup";
+import Home from "./components/Home";
+import Models from "./components/Models";
+import Databases from "./components/Databases";
+import UploadModel from "./components/UploadModel";
+import UploadDatabase from "./components/UploadDatabase";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import "./index.css";
@@ -23,7 +25,7 @@ function App() {
 
   return (
     <Router>
-      <Navbar token={token} setToken={setToken} />
+      <NavBar token={token} setToken={setToken} />
       <Routes>
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/models" element={<ProtectedRoute token={token}><Models token={token} /></ProtectedRoute>} />
