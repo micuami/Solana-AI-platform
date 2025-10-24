@@ -36,7 +36,7 @@ export default function Login({ setToken }) {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-4 border rounded">
+    <div className="max-w-md mx-auto mt-10 p-4 border rounded login-container">
       <h1 className="text-2xl mb-4">Login</h1>
       {error && <p className="text-red-500">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">

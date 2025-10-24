@@ -3,6 +3,9 @@
   line-height: 1.5;
   font-weight: 400;
 
+  /* navbar height used for top spacing when navbar is fixed */
+  --navbar-height: 64px;
+
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
@@ -19,6 +22,110 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.home-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* vertical */
+  align-items: center;     /* horizontal */
+  flex: 1;                 /* take remaining height under the navbar */
+  padding: 2rem;
+  /* add top offset to account for fixed navbar; adjust 2rem as extra spacing */
+  padding-top: calc(var(--navbar-height) + 2rem);
+  text-align: center;
+  min-height: auto;        /* remove the 100vh to avoid exceeding viewport */
+}
+
+.login-container {
+  display: flex; 
+  flex-direction: column;
+  justify-content: center; /* vertical */
+  margin-top: calc(var(--navbar-height) + 2rem); /* adjust for fixed navbar */
+  align-items: center;     /* horizontal */
+  width: 50%;
+  text-align: center;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* ensure the form stacks inputs vertically */
+.login-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* make inputs and button full-width inside the form */
+.login-container input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* button: color #A0236A, not full width */
+.login-container button {
+  width: auto;
+  min-width: 140px;          /* adjust to taste */
+  align-self: center;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+  background-color: #A0236A;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.signup-container {
+  display: flex; 
+  flex-direction: column;
+  justify-content: center; /* vertical */
+  margin-top: calc(var(--navbar-height) + 2rem); /* adjust for fixed navbar */
+  align-items: center;     /* horizontal */
+  width: 50%;
+  text-align: center;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* ensure the form stacks inputs vertically */
+.signup-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* make inputs and button full-width inside the form */
+.signup-container input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* button: color #A0236A, not full width */
+.signup-container button {
+  width: auto;
+  min-width: 140px;          /* adjust to taste */
+  align-self: center;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+  background-color: #A0236A;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.heading {
+  margin-bottom: 1rem;
+  font-size: 3em;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -30,10 +137,10 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 h1 {

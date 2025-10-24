@@ -17,7 +17,7 @@ export default function NavBar({ token, setToken }) {
   return (
     <Navbar expand="lg" className="custom-navbar" fixed="top">
       <Container>
-        <Navbar.Brand href="#home">CortexHub</Navbar.Brand>
+        <Navbar.Brand href="/">CortexHub</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">

@@ -11,7 +11,7 @@ import Databases from "./components/Databases";
 import UploadModel from "./components/UploadModel";
 import UploadDatabase from "./components/UploadDatabase";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import { AuthProvider } from "./AuthContext";
 import "./index.css";
 
 function App() {
@@ -26,16 +26,22 @@ function App() {
   return (
     <Router>
       <NavBar token={token} setToken={setToken} />
-      <Routes>
-        <Route path="/login" element={<Login setToken={setToken} />} />
-        <Route path="/models" element={<ProtectedRoute token={token}><Models token={token} /></ProtectedRoute>} />
-        <Route path="/databases" element={<ProtectedRoute token={token}><Databases token={token} /></ProtectedRoute>} />
-        <Route path="/upload/model" element={<ProtectedRoute token={token}><UploadModel token={token} /></ProtectedRoute>} />
-        <Route path="/upload/db" element={<ProtectedRoute token={token}><UploadDatabase token={token} /></ProtectedRoute>} />
-        <Route path="*" element={<p className="p-4">Page not found</p>} />
-      </Routes>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/signup" element={<Signup setToken={setToken} />} />
+          <Route path="/login" element={<Login setToken={setToken} />} />
+          <Route path="/models" element={<ProtectedRoute token={token}><Models token={token} /></ProtectedRoute>} />
+          <Route path="/databases" element={<ProtectedRoute token={token}><Databases token={token} /></ProtectedRoute>} />
+          <Route path="/upload/model" element={<ProtectedRoute token={token}><UploadModel token={token} /></ProtectedRoute>} />
+          <Route path="/upload/db" element={<ProtectedRoute token={token}><UploadDatabase token={token} /></ProtectedRoute>} />
+          <Route path="*" element={<p className="p-4">Page not found</p>} />
+        </Routes>
     </Router>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+);
